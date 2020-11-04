@@ -19,9 +19,6 @@ namespace ScreenshotTaker
         private IKeyboardMouseEvents m_GlobalHook;
         private FolderBrowserDialog fbd;
 
-        public int screenWidth;
-        public int screenHeight;
-
         public string ssDirPath;
 
         #endregion
@@ -35,8 +32,6 @@ namespace ScreenshotTaker
             fbd = new FolderBrowserDialog();
 
             ssDirPath = null;
-            screenWidth = Screen.PrimaryScreen.Bounds.Width;
-            screenHeight = Screen.PrimaryScreen.Bounds.Height;
         }
         #endregion
 
@@ -58,11 +53,11 @@ namespace ScreenshotTaker
         #region keyPressed Handler
         public void HandleKeyPressed(char keyCode)
         {
-            if (keyCode == 's')
+            if (keyCode == '1')
             {
                 if (ssDirPath == null)
                 {
-                    SelectDir(ref ssLabel, "Hit 's' to save screenshot to the specified folder.", ref ssDirPath);
+                    SelectDir(ref ssLabel, "Hit '1' to save screenshot to the specified folder.", ref ssDirPath);
                 }
                 string path = SaveScreenshot();
                 lastSSLabel.Text = "Last File Created: " + path;
@@ -73,7 +68,7 @@ namespace ScreenshotTaker
         #region Screenshot
         private void pickDirButton_Click(object sender, EventArgs e)
         {
-            SelectDir(ref ssLabel, "Hit 's' to save screenshot to the specified folder.", ref ssDirPath);
+            SelectDir(ref ssLabel, "Hit '1' to save screenshot to the specified folder.", ref ssDirPath);
         }
 
         private void SelectDir(ref Label label, string str, ref string reference)
@@ -94,21 +89,19 @@ namespace ScreenshotTaker
         public string SaveScreenshot()
         {
             string name = null;
-            byte[] buffer = new byte[screenWidth * screenHeight];
-            Bitmap bitmap = new Bitmap(screenWidth, screenHeight);
-            using (var graphics = Graphics.FromImage(bitmap))
+            Bitmap bmp = new Bitmap(Screen.PrimaryScreen.Bounds.Width, Screen.PrimaryScreen.Bounds.Height);
+            using (Graphics g = Graphics.FromImage(bmp))
             {
-                graphics.CopyFromScreen(0, 0, 0, 0, new System.Drawing.Size(screenWidth, screenHeight));
-                var bits = bitmap.LockBits(new Rectangle(0, 0, screenWidth, screenHeight), ImageLockMode.ReadOnly, PixelFormat.Format32bppRgb);
-                Marshal.Copy(bits.Scan0, buffer, 0, buffer.Length);
-                bitmap.UnlockBits(bits);
+                g.CopyFromScreen(0, 0, 0, 0, Screen.PrimaryScreen.Bounds.Size);
 
                 name = DateTime.Now.ToString();
                 name = name.Replace("/", "-");
                 name = name.Replace(":", "-");
                 name = ssDirPath + name + ".png";
-                bitmap.Save(name);
+
+                bmp.Save(name);  // saves the image
             }
+            
             return name;
         }
         #endregion
